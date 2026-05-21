@@ -1,0 +1,22 @@
+.stack-work/
+*~
+*.log
+*.txt
+*.csv
+*.tsv
+data/
+*.sqlite
+src/LawDictionary*.hs
+
+dist/
+dist-newstyle/
+
+# 生成された実行バイナリ（プロジェクト名に合わせて適宜変更）
+law-puzzle
+
+# Python のキャッシュ
+__pycache__/
+*.py[cod]
+
+# OS固有のゴミファイル
+.DS_Store

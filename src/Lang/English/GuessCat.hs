@@ -24,13 +24,19 @@ guessCatCore pos surf
   where
     v = Fun (Atom S) Bwd (Atom NP) -- S\NP
 -}
-
 module Lang.English.GuessCat where
 
 import Core.Cat
 import Core.Morphism
 import Util.Morph (Morph (..))
 
+guessCat :: Morph -> [Morphism]
+guessCat (Morph surf pos lemma) =
+  [ Morphism surf cat (LVar surf) 1.0
+  | cat <- guessCatCore pos surf
+  ]
+
+{-
 guessCat :: Morph -> Morphism
 guessCat (Morph surf pos lemma) =
   Morphism
@@ -39,7 +45,23 @@ guessCat (Morph surf pos lemma) =
       sem = LVar surf,
       weight = 1.0
     }
+-}
 
+guessCatCore :: String -> String -> [Cat]
+guessCatCore pos surf
+  | pos == "DT" = [NP `Fwd` N]
+  | pos == "NN" = [NP]
+  | pos == "IN" = [PP `Fwd` NP, (NP `Bwd` NP) `Fwd` NP] -- with, into など
+  | pos == "VB" =
+      [ S `Bwd` NP,
+        (S `Bwd` NP) `Fwd` PP -- comply のような PP を取る動詞
+      ]
+  | otherwise = [NP]
+
+allMorphismPatterns :: [[Morphism]] -> [[Morphism]]
+allMorphismPatterns = sequence
+
+{-
 guessCatCore :: String -> String -> Cat
 guessCatCore pos surf
   -- 冠詞
@@ -106,3 +128,4 @@ guessCatCoreOrg pos surf
   | pos == "." = Atom S
   -- デフォルト
   | otherwise = Atom NP
+-}

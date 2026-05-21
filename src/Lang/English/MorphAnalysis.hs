@@ -12,3 +12,10 @@ lineToMorph line =
       Morph surf pos surf
     _ ->
       Morph "" "" ""
+
+validParses :: [[Morphism]] -> [[Morphism]]
+validParses patterns =
+  [ p
+  | p <- patterns,
+    reduceAll (map cat p) == Just (Atom S)
+  ]
