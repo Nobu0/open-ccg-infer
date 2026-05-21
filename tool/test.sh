@@ -1,0 +1,2 @@
+
+stack run "inpen.txt"

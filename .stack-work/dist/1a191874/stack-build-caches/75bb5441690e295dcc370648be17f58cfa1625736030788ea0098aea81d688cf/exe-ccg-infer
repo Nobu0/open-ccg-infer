@@ -1,0 +1,20 @@
+C:\Users\blue3\haskell\ccg-infer\CHANGELOG.md:
+  hash: 045d3a2b5d7101a628efeb93cbe0884f7507cbb6fc06b6c26c2a9762258f88c3
+C:\Users\blue3\haskell\ccg-infer\README.md:
+  hash: ee8c8d98f2c3945df653efd018c3cacaf7caacfc4934f37f8f697c96dfe3e6c8
+C:\Users\blue3\haskell\ccg-infer\ccg-infer.cabal:
+  hash: b64fc0fd034c0c6d83aa7da957fe2eee21782879e9459dd7d8171fe90374e534
+C:\Users\blue3\haskell\ccg-infer\src\Core\Cat.hs:
+  hash: 1571480414d3cebcf32e8abc51f76a89f0f208acbc16e0d77dc924bcb6e504b4
+C:\Users\blue3\haskell\ccg-infer\src\Core\Morphism.hs:
+  hash: 06f9406c075614e6d37bfb6c14185c4025bb19d5ec9a10996a140ff0cfcf7727
+C:\Users\blue3\haskell\ccg-infer\src\Core\Reduce.hs:
+  hash: 9304dbb0669889064a653a5a7647e0f6f5460d98fa0c2e5106be6bd12f8b734e
+C:\Users\blue3\haskell\ccg-infer\src\Lang\English\GuessCat.hs:
+  hash: b4be8a50602f33e0140aa7798563d497e07e8213011f7c9c9ffcb8c3822eae22
+C:\Users\blue3\haskell\ccg-infer\src\Lang\English\MorphAnalysis.hs:
+  hash: 3ffccc85dcad2e2446d0517b5889372d18cdd3e3b76a7c235c219082e22dbcbb
+C:\Users\blue3\haskell\ccg-infer\src\Main.hs:
+  hash: 536d793c0fe29a916684e273e1365e6aff3d053d9b18d8a5859249a2580bf660
+C:\Users\blue3\haskell\ccg-infer\src\Util\Morph.hs:
+  hash: 7e548ba1ae1af16477c07a4d9e318f8e9d5e0ecadcaacbca99f7571357f48085
