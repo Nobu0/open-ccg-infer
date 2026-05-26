@@ -1,5 +1,8 @@
 module Lang.English.MorphAnalysis where
 
+import Core.Cat
+import Core.Morphism
+import Core.Reduce
 import Util.Morph (Morph (..))
 
 analyze :: String -> IO [Morph]

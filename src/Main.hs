@@ -33,6 +33,7 @@ main = do
 module Main where
 
 import Control.Monad (guard)
+import Core.Cat
 import Core.Morphism (Morphism (..))
 import Core.Reduce (reduceAll)
 import Lang.English.GuessCat (guessCat)
@@ -61,20 +62,47 @@ main = do
       txt <- readFile fileName
       morphs <- analyze txt
 
-      -- 各語について複数 Morphism を生成
       let morphismOptions :: [[Morphism]]
           morphismOptions = map guessCat morphs
 
-      -- 全組み合わせ生成
       let allPatterns :: [[Morphism]]
           allPatterns = sequence morphismOptions
 
-      -- S になるパターンだけ残す
       let validPatterns =
             [ p
             | p <- allPatterns,
               reduceAll (map cat p) == Just (Atom S)
             ]
 
-      print validPatterns
+      putStrLn "=== ALL PATTERNS ==="
+      mapM_ (print . map cat) allPatterns
+
+      putStrLn "=== REDUCE RESULTS ==="
+      mapM_ (\p -> print (map cat p, reduceAll (map cat p))) allPatterns
+
+      putStrLn "=== VALID PATTERNS ==="
+      mapM_ print
+        [ reduceAll (map cat p)
+        | p <- allPatterns
+        , reduceAll (map cat p) == Just (Atom S)
+        ]
+      putStrLn "=== VALID DISCRIPTION PATTERNS ==="
+      mapM_ print
+        [ (map cat p, reduceAll (map cat p))
+        | p <- allPatterns
+        , reduceAll (map cat p) == Just (Atom S)
+        ]
+
     _ -> putStrLn "Usage: ccg-infer <filename>"
+
+instance Show Morphism where
+  show (Morphism s c sem w) =
+    "Morphism {surface = "
+      ++ s
+      ++ ", cat = "
+      ++ show c
+      ++ ", sem = "
+      ++ show sem
+      ++ ", weight = "
+      ++ show w
+      ++ "}"

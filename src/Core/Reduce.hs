@@ -1,29 +1,73 @@
 module Core.Reduce where
 
 import Core.Cat
+import Control.Applicative ((<|>))
+import Debug.Trace (trace, traceIO, traceShowId)
+
+-- Forward Composition: (X/Y) (Y/Z) → X/Z
+forwardCompose :: Cat -> Cat -> Maybe Cat
+forwardCompose (Fun x Fwd y) (Fun y' Fwd z)
+  | y == y' = Just (Fun x Fwd z)
+forwardCompose _ _ = Nothing
 
 reduceOnce :: [Cat] -> Maybe [Cat]
+reduceOnce [] = Nothing
+reduceOnce [_] = Nothing
+reduceOnce (c1:c2:rest) =
+  case tryReduce c1 c2 of
+    Just r  -> Just (r : rest)
+    Nothing -> do
+      rest' <- reduceOnce (c2:rest)
+      return (c1 : rest')
+{-
+reduceOnce :: [Cat] -> Maybe [Cat]
+reduceOnce [] = Nothing
+reduceOnce [_] = Nothing
 reduceOnce (c1 : c2 : rest) =
-  case forwardApp c1 c2 of
+  case tryReduce c1 c2 of
     Just r -> Just (r : rest)
-    Nothing ->
-      case backwardApp c1 c2 of
-        Just r -> Just (r : rest)
-        Nothing ->
-          case combineSP c1 c2 of
-            Just r -> Just (r : rest)
-            Nothing -> do
-              rest' <- reduceOnce (c2 : rest)
-              return (c1 : rest')
-reduceOnce _ = Nothing
+    Nothing -> do
+      rest' <- reduceOnce (c2 : rest)
+      return (c1 : rest')
+-}
 
-reduceAll :: [Cat] -> [Cat]
-reduceAll [c] = [c]
-reduceAll (Atom S : _) = [Atom S] -- ★ ここを追加
-reduceAll cs =
-  case reduceOnce cs of
-    Just cs' -> reduceAll cs'
-    Nothing -> cs
+postApp :: Cat -> Cat -> Maybe Cat
+postApp x (Fun a Fwd b)
+  | a == b && b == x = Just x   -- X  (X/X) → X
+postApp _ _ = Nothing
+
+{-
+tryReduce :: Cat -> Cat -> Maybe Cat
+tryReduce c1 c2 =
+      dbg "FC"  (forwardCompose c1 c2)
+  <|> dbg "FA"  (forwardApp c1 c2)
+  <|> dbg "BA"  (backwardApp c1 c2)
+  <|> dbg "SP"  (combineSP c1 c2)
+  <|> dbg "PA"  (postApp c1 c2)
+-}
+dbg :: String -> Maybe Cat -> Maybe Cat
+dbg tag r =
+  case r of
+    Just _  -> trace ("[" ++ tag ++ "] fired") r
+    Nothing -> r
+
+
+tryReduce :: Cat -> Cat -> Maybe Cat
+tryReduce c1 c2 =
+      forwardCompose c1 c2
+  <|> forwardApp c1 c2
+  <|> backwardApp c1 c2
+  <|> combineSP c1 c2
+  <|> postApp c1 c2
+
+reduceAll :: [Cat] -> Maybe Cat
+reduceAll cats =
+  case reduceOnce cats of
+    Nothing ->
+      if length cats == 1
+        then Just (head cats)
+        else Nothing
+    Just cats' -> reduceAll cats'
 
 -- 主語述語の最終結合
 combineSP :: Cat -> Cat -> Maybe Cat

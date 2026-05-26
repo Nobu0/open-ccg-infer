@@ -49,14 +49,47 @@ guessCat (Morph surf pos lemma) =
 
 guessCatCore :: String -> String -> [Cat]
 guessCatCore pos surf
-  | pos == "DT" = [NP `Fwd` N]
-  | pos == "NN" = [NP]
-  | pos == "IN" = [PP `Fwd` NP, (NP `Bwd` NP) `Fwd` NP] -- with, into など
-  | pos == "VB" =
-      [ S `Bwd` NP,
-        (S `Bwd` NP) `Fwd` PP -- comply のような PP を取る動詞
+  | pos == "DT" =
+      [ Fun (Atom NP) Fwd (Atom N) ]        -- NP/N
+
+  | pos `elem` ["NN","NNS","NNP","NNPS"] =
+      [ Atom N ]                            -- N
+
+  -- 助動詞 shall
+  | pos == "MD" =
+      let vp = Fun (Atom S) Bwd (Atom NP) -- S\NP
+       in [Fun vp Fwd vp] -- (S\NP)/(S\NP)
+
+  -- comply（VB）: (S\NP)/PP と S\NP の2候補
+  | surf == "comply" =
+      [ Fun (Fun (Atom S) Bwd (Atom NP)) Fwd (Atom PP), -- (S\NP)/PP
+        Fun (Atom S) Bwd (Atom NP) -- S\NP
       ]
-  | otherwise = [NP]
+  -- 前置詞 with
+  | pos == "IN" =
+      [ Fun (Atom PP) Fwd (Atom NP) -- PP/NP
+      ]
+  -- 句点
+  | pos == "." =
+      [Fun (Atom S) Fwd (Atom S)] -- S/S
+
+  -- デフォルト
+  | otherwise =
+      [Atom NP]
+
+guessCatCoreXX :: String -> String -> [Cat]
+guessCatCoreXX pos surf
+  | pos == "DT" = [Fun (Atom NP) Fwd (Atom N)]
+  | pos == "NN" = [(Atom NP)]
+  | pos == "IN" =
+      [ Fun (Atom PP) Fwd (Atom NP),
+        Fun (Fun (Atom NP) Bwd (Atom NP)) Fwd (Atom NP) -- with, into など
+      ]
+  | pos == "VB" =
+      [ Fun (Atom S) Bwd (Atom NP),
+        Fun (Fun (Atom S) Bwd (Atom NP)) Fwd (Atom PP) -- comply のような PP を取る動詞
+      ]
+  | otherwise = [(Atom NP)]
 
 allMorphismPatterns :: [[Morphism]] -> [[Morphism]]
 allMorphismPatterns = sequence
