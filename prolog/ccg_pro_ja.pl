@@ -248,12 +248,12 @@ parse([C], C):- writeln([C,ok]).
 parse(Cats, Result) :-
     reduce_leftmost(Cats, NewCats),
     length(NewCats,LN),
-    %format('~w, ~w ~n',[LN,NewCats]),
+    format('~w, ~w ~n',[LN,NewCats]),
     parse(NewCats, Result).
 
 reduce_leftmost([A,B|Rest], [C|Rest]) :-
     combine(A,B,C,NM),
-    %format("~w x ~w --> ~w     ~w~n", [A,B,C,NM]).
+    format("~w x ~w --> ~w     ~w~n", [A,B,C,NM]),
     !.
 
 reduce_leftmost([X|Rest], [X|Rest2]) :-
