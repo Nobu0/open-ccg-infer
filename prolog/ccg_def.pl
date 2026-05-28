@@ -2,11 +2,11 @@
 cat(s,                     [l,r], [fb]).
 cat(np,                    [l,r], [fb]).
 %cat(n,                     [],    []).
-cat(fun(s,np,b),           [l,r], [fb]). % 主語待ちの述語(VP)
-cat(fun(s,np,f),           [r],   [fb]). % 文全体を修飾する名詞句
-cat(fun(s,fun(s,np,b),b),  [l],   []).   % 副詞節として定義
-cat(fun(s,s,f),            [l,r], []).   % 文全体を修飾する副詞
-cat(fun(fun(s,np,b),np,f), [l,r], []).   % 動詞(V)として定義
+cat(fun(s,np,b),           [l,r], [fb]). % 主語待ちの述語(VP) S\NP
+cat(fun(s,np,f),           [r],   [fb]). % 文全体を修飾する名詞句 S/NP
+cat(fun(s,fun(s,np,b),b),  [l],   []).   % 副詞節として定義 S\(S\NP)
+cat(fun(s,s,f),            [l,r], []).   % 文全体を修飾する副詞 S/S
+cat(fun(fun(s,np,b),np,f), [l,r], []).   % 動詞(V)として定義 (S\NP)/NP
 
 
 % 発火条件 ------------------------------
