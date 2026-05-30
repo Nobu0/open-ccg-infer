@@ -1,14 +1,41 @@
 
 import os
 import re
-from collections import Counter
+from collections import Counter, defaultdict
 
 counter = Counter()
-
-from collections import Counter, defaultdict
+cotBox = Counter()
 
 # ノイズ語
 NOISE = {'(', ')', ',', '.', 'sp'}
+linesH = []
+linesT = []
+textBuf = []
+
+box_map = {}
+
+def append_box(key, tokens):
+      sky = tuple(tokens)
+      if key not in box_map:
+        box_map[key] = {
+              "count": 0,
+              "examples": {},
+              "pattern": None,   # 射パターンを後で入れる
+          }
+      box_map[key]["count"] += 1
+      if sky not in box_map[key]["examples"]:
+        box_map[key]["examples"][sky] = {
+          "count": 0,
+          "text": ""
+        }
+      box_map[key]["examples"][sky]["count"] += 1  
+      box_map[key]["examples"][sky]["text"] = tokens
+
+def loader(file, buf):
+    with open(file, encoding="utf-8") as f:
+      for line in f:
+        tokens = line.strip().split()
+        buf.append(tokens)
 
 # 4-gram が有用かどうか判定
 def is_useful_4gram(g):
@@ -18,7 +45,7 @@ def is_useful_4gram(g):
     return True
 
 # 4-gram の結合（4+4-2 = 6）
-def make_6gram_candidates(fourgrams):
+def make_Ngram_candidates(fourgrams):
     candidates = set()
     fg_list = list(fourgrams)
 
@@ -31,20 +58,21 @@ def make_6gram_candidates(fourgrams):
                 candidates.add(six)
     return candidates
 
-# 生データで 6-gram を検定
-def validate_6grams(file, candidates):
+# 生データで N-gram を検定
+def validate_Ngrams(linesH, candidates, ngm):
     counter = Counter()
-    with open(file, encoding="utf-8") as f:
-          for line in f:
-            
-            tokens = line.strip().split()
-            if len(tokens) < 6:
-                continue
-            # 全 6-gram を走査
-            for i in range(len(tokens)-6+1):
-                g = tuple(tokens[i:i+6])
-                if g in candidates:
-                    counter[g] += 1
+    l = -1
+    for tokens in linesH:
+        l += 1     
+        if len(tokens) < ngm:
+            continue
+        # 全 6-gram を走査
+        for i in range(len(tokens)-ngm+1):
+            g = tuple(tokens[i:i+ngm])
+            if g in candidates:
+                tx = linesT[l][i:i+ngm]
+                append_box(g, tx) 
+                counter[g] += 1
     return counter
 
 
@@ -55,17 +83,15 @@ def ngram_freq(tokens, n=4):
     # tokens は 1行分のトークン列（リスト）
     counter.update(ngrams(tokens, n))
 
-def get_pattern(file):
+def get_pattern(linesH):
     i = 0
-    with open(file, encoding="utf-8") as f:
-        for line in f:
-            cols = line.strip().split()
-            if len(cols) < 4:
-                continue
-            ngram_freq(cols, 4)
-            i += 1
-            #if i > 100:
-            #    return
+    for cols in linesH:
+        if len(cols) < 4:
+            continue
+        ngram_freq(cols, 4)
+        i += 1
+        #if i > 100:
+        #    return
 
 NOISE = {'(', ')', ',', '.', 'sp', ';', ':'}
 
@@ -95,7 +121,14 @@ def classify_ccg(tags):
 if __name__ == "__main__":
     file = "../act-monad/data/stxen.txt"
     file = "../act-monad/data/stxja.txt"
-    get_pattern(file)
+    file2 = "../act-monad/data/srcja.txt"
+    #file = "stxja100.txt"
+    #file2 = "srcja100.txt"
+    loader(file, linesH)
+    print(f"data: hinshi length={len(linesH)}")
+    loader(file2,linesT)
+    print(f"data: text length={len(linesT)}")
+    get_pattern(linesH)
 
     連体修飾候補 = []
     述語候補 = []
@@ -132,9 +165,19 @@ if __name__ == "__main__":
 
     # 生データで検定
     #file = "../act-monad/data/stxen.txt"
-    validated = validate_6grams(file, candidates)
+    validated = validate_Ngrams(linesH, candidates, 6)
 
     # 出現頻度順に表示
-    for g, c in validated.most_common(30):
+    for g, c in validated.most_common(1):
         ccg = classify_ccg(g)
         print(g, c, ccg)
+    i = 0    
+    for g in box_map:
+        print(g, i)
+        c = 0
+        for ex in box_map[g]["examples"]:
+            print(box_map[g]["examples"][ex])
+            if c > 10:  break
+            c += 1
+        if i > 2: break
+        i += 1    

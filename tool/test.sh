@@ -1,4 +1,6 @@
 
 #stack run "inpen.txt"
 
-python tool/pattern_hinshi.py
+date
+python tool/auto_ccg1.py
+date

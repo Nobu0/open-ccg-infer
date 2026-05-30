@@ -8,6 +8,7 @@ data/
 *.sqlite
 src/LawDictionary*.hs
 
+.hie/
 dist/
 dist-newstyle/
 
