@@ -31,11 +31,44 @@ def append_box(key, tokens):
       box_map[key]["examples"][sky]["count"] += 1  
       box_map[key]["examples"][sky]["text"] = tokens
 
-def loader(file, buf):
+def trim_sp(src):
+    tok = []
+    i = -1
+    for c in src:
+      i += 1
+      if (c != 'sp'):# and c != ','):
+        #print(c)
+        tok.append(c)
+    return tok
+
+def trim_sp2(src,l):
+    tok = []
+    i = -1
+    if len(linesT[i]) == len(src):
+        return src
+    for c in src:
+      i += 1
+      if i == 1 and (src[i] in {'CD','NN','VRB','IN'}) and src[0]=='LS':
+        continue # and c != ','):
+      elif i == 4 and (src[i-1] == 'CD' and src[i] == 'CD'):
+        continue # and c != ','):
+      else:
+        tok.append(c)
+    return tok
+
+def loader(file, buf, flg):
     with open(file, encoding="utf-8") as f:
+      l = -1
       for line in f:
+        l += 1
         tokens = line.strip().split()
-        buf.append(tokens)
+        if flg == 1:
+            tok = trim_sp(tokens)
+        elif flg == 2:
+            tok = trim_sp2(tokens,l)
+        else:
+            tok = tokens
+        buf.append(tok)
 
 # 4-gram が有用かどうか判定
 def is_useful_4gram(g):
@@ -44,19 +77,30 @@ def is_useful_4gram(g):
         return False
     return True
 
-# 4-gram の結合（4+4-2 = 6）
-def make_Ngram_candidates(fourgrams):
+def make_Ngram_candidates(grams, overlap, target_len):
+    """
+    grams: list of tuples (元の n-gram 群)
+    overlap: 何語オーバーラップさせるか
+    target_len: 作りたい n-gram の長さ
+    """
     candidates = set()
-    fg_list = list(fourgrams)
+    g_list = list(grams)
+    base_len = len(g_list[0])  # 元の n-gram の長さ
 
-    for a in fg_list:
-        for b in fg_list:
-            # a = (t1,t2,t3,t4)
-            # b = (t3,t4,t5,t6) を探す
-            if a[2] == b[0] and a[3] == b[1]:
-                six = (a[0], a[1], a[2], a[3], b[2], b[3])
-                candidates.add(six)
+    # 結合後の長さチェック
+    if target_len != base_len * 2 - overlap:
+        raise ValueError("target_len は base_len*2 - overlap と一致する必要があります")
+
+    for a in g_list:
+        for b in g_list:
+            # a の後ろ overlap 語 と b の前 overlap 語 が一致するか
+            if a[-overlap:] == b[:overlap]:
+                # 結合：a の前半 + b の後半
+                new_ngram = a + b[overlap:]
+                candidates.add(new_ngram)
+
     return candidates
+
 
 # 生データで N-gram を検定
 def validate_Ngrams(linesH, candidates, ngm):
@@ -93,8 +137,13 @@ def get_pattern(linesH):
         #if i > 100:
         #    return
 
+def cnv_address(linesH, lineT):
+    i = 0
+    for cols in linesH:
+        i += 1
+
 NOISE = {'(', ')', ',', '.', 'sp', ';', ':'}
-CODE = {'cdhd', 'cd', 'nnt'}
+CODE = {'cdhd', 'cd', 'CD', 'DT', 'NNP'} #, 'nnt'}
 
 def is_noise(gram):
     return any(tok in NOISE for tok in gram)
@@ -121,37 +170,30 @@ def classify_ccg(tags):
 
     return "OTHER"
 
+def check_HT():
+    i = -1
+    for x in linesH:
+        i += 1
+        if len(linesH[i]) != len(linesT[i]):
+            print (i, linesH[i])
+            print (i, linesT[i])
+
 if __name__ == "__main__":
+    #file = "../act-monad/data/stxja.txt"
+    #file2 = "../act-monad/data/srcja.txt"
     file = "../act-monad/data/stxen.txt"
-    file = "../act-monad/data/stxja.txt"
-    file2 = "../act-monad/data/srcja.txt"
+    file2 = "../act-monad/data/srcen.txt"
     #file = "stxja100.txt"
     #file2 = "srcja100.txt"
-    loader(file, linesH)
-    print(f"data: hinshi length={len(linesH)}")
-    loader(file2,linesT)
+    loader(file2,linesT, 0)
     print(f"data: text length={len(linesT)}")
-    get_pattern(linesH)
+    loader(file, linesH, 2)
+    print(f"data: hinshi length={len(linesH)}")
+    check_HT()
+    exit
 
-    連体修飾候補 = []
-    述語候補 = []
-    副詞句候補 = []
-    チャンク境界 = []
-    for g, c in counter.most_common(200):
-        if is_noise(g):  continue
-        if g[-1] == 'の':
-          連体修飾候補.append(g)
-        if g[-2] == '格' and g[-1] in ('vb','助動'):
-          述語候補.append(g)
-        if g[0] == 'vb' and g[-1] == '格':
-          副詞句候補.append(g)
-        if g[:3] == ('cdhd','cd','nnt'):
-          チャンク境界.append(g)
-    
-    print(f"連体修飾候補 = {連体修飾候補}")
-    print(f"述語候補 = {述語候補}")
-    print(f"副詞句候補 = {副詞句候補}")
-    print(f"チャンク境界 = {チャンク境界}")
+    cnv_address(linesH, linesT)
+    get_pattern(linesH)
 
     # すでに抽出済みの 4-gram 頻度（例）
     # 実際にはあなたの counter.most_common() の結果を使う
@@ -164,24 +206,30 @@ if __name__ == "__main__":
     useful_4grams = [g for g in fourgrams if is_useful_4gram(g)]
 
     # 4+4-2 で 6-gram 仮説生成
-    candidates = make_6gram_candidates(useful_4grams)
+    candidates = make_Ngram_candidates(useful_4grams,2,6)
+    #candidates1 = make_Ngram_candidates(candidates0,2,10)
+    #candidates = make_Ngram_candidates(candidates1,2,18)
 
     # 生データで検定
     #file = "../act-monad/data/stxen.txt"
     validated = validate_Ngrams(linesH, candidates, 6)
 
     # 出現頻度順に表示
-    for g, c in validated.most_common(1):
-          ccg = classify_ccg(g)
-          print(g, c, ccg)
-
-    i = 0    
-    for g in box_map:
-        print(g, i)
+    for g, c in validated.most_common(20):
+      #if is_code(g):
+        ccg = classify_ccg(g)
+        print("-------------------------------------")
+        print(g, c, ccg)
+        #continue
+        i = 0    
+        #for g in box_map[g]:
+        #  if is_code(g):
+        #    print(g, i)
         c = 0
         for ex in box_map[g]["examples"]:
             print(box_map[g]["examples"][ex])
-            if c > 10:  break
+            if c > 100:  break
             c += 1
-        if i > 2: break
-        i += 1    
+
+      #if i > 20: break
+      #i += 1    

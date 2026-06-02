@@ -150,28 +150,6 @@ jp_chunks(SentId, Chunks) :-
             append(Content, FuncJ, Chunk)
         ),
         Chunks).
-/*
-jp_chunk_cat(['３','　'], fun(s,s,f)).
-jp_chunk_cat([農林,水産,大臣], np).
-jp_chunk_cat([まぐろ], np).
-jp_chunk_cat([需給], np).
-jp_chunk_cat([事情], np).
-jp_chunk_cat([その他], np).
-jp_chunk_cat([変動], np).
-jp_chunk_cat([により], fun(fun(s,np,b), np, f)).
-jp_chunk_cat([必要], fun(s,np,b)).
-jp_chunk_cat([とき], np).
-jp_chunk_cat([基本,方針], np).
-jp_chunk_cat([変更], fun(fun(s,np,b), np, f)).
-jp_chunk_cat([もの,と,する], fun(s,np,b)).
-jp_chunk_cat(['。'], fun(s,s,f)).
-
-jp_chunk_cat([は], fun(s,np,f)).
-jp_chunk_cat([を], fun(fun(s,np,b), np, f)).
-jp_chunk_cat([が], fun(fun(s,np,b), np, f)).
-jp_chunk_cat(['、'], fun(s,s,f)).
-
-*/
 
 cat(が,fun(s, np, b)).
 cat(が,fun(np, np, f)).
