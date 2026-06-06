@@ -1,6 +1,0 @@
-Morphism {surface = "\25105\12364\22269", cat = Atom NP, sem = LVar "\25105\12364\22269", weight = 1.0}
-Morphism {surface = "\12364", cat = Atom PP, sem = LVar "\12364", weight = 1.0}
-Morphism {surface = "\26465\32004", cat = Atom NP, sem = LVar "\26465\32004", weight = 1.0}
-Morphism {surface = "\12434", cat = Atom PP, sem = LVar "\12434", weight = 1.0}
-Morphism {surface = "\36981\23432", cat = Atom NP, sem = LVar "\36981\23432", weight = 1.0}
-Morphism {surface = "\12377\12427", cat = Fun (Fun (Atom S) Bwd (Atom NP)) Fwd (Atom NP), sem = LVar "\12377\12427", weight = 1.0}

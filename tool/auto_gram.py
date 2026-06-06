@@ -1,98 +1,134 @@
-import sqlite3
+import ast
+import os
+import re
+from collections import Counter, defaultdict
 
-import sqlite3
+counter = Counter()
+cotBox = Counter()
 
-def generate_sixgram(conn, act_id=None, limit=None):
-    cur = conn.cursor()
+# ノイズ語
+NOISE = {'(', ')', ',', '.', 'sp'}
+linesH = []
+linesT = []
+textBuf = []
+linesTH = []
 
-    # pos_tbl を取得
-    if act_id is None:
-        cur.execute("SELECT act_id, src_id, word FROM pos_tbl ORDER BY act_id, src_id")
-    else:
-        cur.execute("SELECT act_id, src_id, word FROM pos_tbl WHERE act_id=? ORDER BY src_id", (act_id,))
-    print("end select")
-    rows = cur.fetchall()
+box_map = {}
+def is_noun(pos):
+    return pos.startswith("nn")
 
-    # act_id ごとに処理
-    from collections import defaultdict
+def get_token(seq):
+    """名詞句の最大スパンを返す"""
+    tmp = []
+    for c in seq:
+        if c in {'sp', '(', ')', ';', '、', '。', '格', ',', '.', '記号,空白', '接', 'cc', '係', '助並'}:
+            break
+        tmp.append(c)
+    return tuple(tmp)
 
-    # act_id → [words]
-    act_words = defaultdict(list)
-    for act, sid, w in rows:
-        act_words[act].append((sid, w))
+def extract_max_noun_blocks(linesTH):
+    blocks = {}  # key: 名詞句タプル, value: (freq, max_flag)
 
-    result = []
+    for line in linesTH:
+        pos_seq = [pos for (pos, word) in line]
+        n = len(pos_seq)
+        i = 0
 
-    for act, seq in act_words.items():
-        # seq = [(src_id, word), ...]
-        words = [w for _, w in seq]
-        src_ids = [sid for sid, _ in seq]
+        while i < n:
+            if is_noun(pos_seq[i]):
+                # 最大句を取得
+                key = get_token(pos_seq[i:])
 
-        # 4-gram を作る
-        fg = []
-        for i in range(len(words) - 3):
-            fg.append((i, words[i:i+4]))  # (index, [w1,w2,w3,w4])
+                if len(key) > 1:
+                    if key not in blocks:
+                        blocks[key] = [0, 1]  # freq, max_flag
+                    blocks[key][0] += 1
 
-        # 4+4-2 → 6-gram を作る
-        sixgrams = defaultdict(int)
+                # 名詞列をスキップ
+                while i < n and is_noun(pos_seq[i]):
+                    i += 1
+            else:
+                i += 1
 
-        for i, g1 in fg:
-            w1 = g1
-            tail = tuple(w1[2:4])  # 末尾2語
+    return blocks
 
-            # tail が一致する g2 を探す
-            for j, g2 in fg:
-                if j <= i:
-                    continue
-                if tuple(g2[0:2]) == tail:
-                    # 6-gram = w1[0:4] + g2[2:4]
-                    six = w1 + g2[2:4]
-                    sixgrams[tuple(six)] += 1
+def clean_and_sort(noun_sequences):
 
-        # 結果を整形
-        for six, cnt in sixgrams.items():
-            result.append({
-                "act_id": act,
-                "sixgram": list(six),
-                "count": cnt
-            })
+    counter = Counter(noun_sequences)
+    sorted_items = counter.most_common()
 
-    # limit があれば適用
-    if limit:
-        result = result[:limit]
+    cleaned = []
+    head_count = {}
 
-    return result
+    for seq, freq in sorted_items:
+        head = seq.split()[0]
+        if head not in head_count:
+            head_count[head] = 0
 
-DB = "db/ccgDB.sqlite"
+        #if head_count[head] < 3:
+        cleaned.append((seq, freq))
+        head_count[head] += 1
+    
+    return sorted(cleaned)
+
+
+def print_pos_sequences(pos_seq, max_lines=50):
+    """
+    pos_seq: [(pos, word), ...]
+    max_lines: 表示する最大行数
+    """
+    count = 0
+    current_line = []
+
+    i = -1
+    for line in pos_seq:
+      for (pos, word) in line:  
+        i += 1
+        current_line.append(pos)
+
+        # 句読点で行を切る（任意）
+        if pos in ("。", "終", "句点"):
+            print(" ".join(current_line))
+            current_line = []
+            count += 1
+            if count >= max_lines:
+                break
+
+    # 最後の行が残っていたら出す
+    if current_line:
+        print(" ".join(current_line))
+
+
+def loader(file, buf):
+    # ファイルを読み込みモード('r')で開く
+    with open(file, "r", encoding="utf-8") as file:
+        for line in file:
+            # 行末の改行コード等を除去
+            line = line.strip()
+            
+            # 空行でなければ復元処理を実行
+            if line:
+                # 文字列をPythonのオブジェクト（リスト）に変換
+                data_list = ast.literal_eval(line)
+                buf.append(data_list)
+
 
 if __name__ == "__main__":
-  conn = sqlite3.connect(DB)
-  #rows = generate_sixgram(conn)
-  rows = generate_sixgram(conn, act_id=1, limit=50)
+    loader("jp_list.txt", linesTH)
+    #loader("jp_list_test.txt", linesTH)
+    print(f"data: text length={len(linesTH)}")
+    print("POSをロード完了")
 
-  for r in rows:
-      print(r["sixgram"])
+    # ★ 名詞列の元ネタ抽出
+    seqs = extract_max_noun_blocks(linesTH)
 
-  conn.close()
+    # ★ ソート＋クリーン化
+    #cleaned = clean_and_sort(noun_seqs)
 
-  print("[DB] N-Gram.")
-  exit()
+    # ★ 表示（品詞列だけ）
+    print("=== 品詞列 ===")
+    for buf in seqs:
+        print(buf, seqs[buf])
+    #for seq, freq in seqs:
+    #    print(f"'{seq}' {freq}")
 
-  # ここで人間が確認して OK なら INSERT
-  cur = conn.cursor()
-  for r in rows:
-      cur.execute("""
-          INSERT INTO box_tbl (act_id, start_id, end_id, content, class_id)
-          VALUES (?, ?, ?, ?, ?)
-      """, (
-          r["act_id"],
-          r["start_id"],
-          r["start_id"] + 5,
-          r["sixgram"],
-          100  # class_id は仮
-      ))
-
-  conn.commit()
-  conn.close()
-
-  print("[DB] N-Gram.")

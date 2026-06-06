@@ -50,13 +50,42 @@ def register_pos_patterns_from_log(conn, filename, lang=1, class_id=100, priorit
 
     conn.commit()
 
-
+###############################################
 conn = sqlite3.connect("db/ccgDB.sqlite")
+
 
 register_pos_patterns_from_log(
     conn,
-    filename="logall3.txt",  # あなたのログファイル
+    filename="logallX301.txt",  # あなたのログファイル
     lang=1,                    # 日本語
-    class_id=100,              # アドレス句
+    class_id=301,              # アドレス句を含む
     priority=1
 )
+
+exit()
+register_pos_patterns_from_log(
+    conn,
+    filename="logallX302.txt",  # あなたのログファイル
+    lang=1,                    # 日本語
+    class_id=302,              # 名詞句の、JJ有り
+    priority=1
+)
+
+register_pos_patterns_from_log(
+    conn,
+    filename="logallNX303.txt",  # あなたのログファイル
+    lang=1,                    # 日本語
+    class_id=303,              # アドレス句を含む
+    priority=1
+)
+
+register_pos_patterns_from_log(
+    conn,
+    filename="logallNX304.txt",  # あなたのログファイル
+    lang=1,                    # 日本語
+    class_id=304,              # アドレス句を含む
+    priority=2
+)
+
+conn.close()
+

@@ -19,6 +19,17 @@ PATTERNS = {
     # 日本語
     # 第XX号　等
     ('cdhd','cd','nnt'): ('ADDR', ['cdhd','cd','nnt']),
+    ('nnp','cd','nnt'): ('ADDR', ['cdhd','cd','nnt']),
+    ('nn', 'nn', 'nn', 'nn'): ('TAG92',['nn', 'nn', 'nn', 'nn']), 
+    ('nn', 'nn', 'nn'): ('TAG93',['nn', 'nn', 'nn']), 
+    ('nn', 'nn'): ('TAG94',['nn', 'nn']), 
+    ('nns', 'nns', 'nns'): ('TAG95',['nns', 'nns', 'nns']), 
+    ('nns', 'nns'): ('TAG96',['nns', 'nns']), 
+    ('nn', 'nns', 'nnt'): ('TAG97',['nn', 'nns', 'nnt']), 
+    ('nn', 'nn', 'nnt'): ('TAG103',['nn', 'nn', 'nnt']), 
+    ('nn', 'nnt'): ('TAG104',['nn', 'nnt']), 
+    ('nnp', 'nnt'): ('TAG98',['nnp', 'nnt']), 
+    ('nnp', 'nn'): ('TAG99',['nnp', 'nn']), 
     # 受け た もの と みなす
     ('vb', '助動', 'nnh', '格', 'vb'):('DEEMED', ['vb', '助動', 'nnh', '格', 'vb']),  
     ('助動', '接', 'vbo', '助動'): ('MUST', ['助動', '接', 'vbo', '助動']),
@@ -42,19 +53,9 @@ PATTERNS = {
     ('nnjv', '助動'): ('TAG4',['nnjv', '助動']),
     ('vb', 'nnh', '格', '終', 'nn'): ('TAG90',['vb', 'nnh', '格', '終', 'nn']),
     ('vb', '助動', 'nnh'): ('TAG91',['vb', '助動', 'nnh']), 
-    ('nns', 'nns', 'nns'): ('TAG95',['nns', 'nns', 'nns']), 
-    ('nns', 'nns'): ('TAG96',['nns', 'nns']), 
-    ('nn', 'nns', 'nnt'): ('TAG97',['nn', 'nns', 'nnt']), 
-    ('nn', 'nn', 'nnt'): ('TAG103',['nn', 'nn', 'nnt']), 
-    ('nn', 'nnt'): ('TAG104',['nn', 'nnt']), 
-    ('nnp', 'nnt'): ('TAG98',['nnp', 'nnt']), 
-    ('nnp', 'nn'): ('TAG99',['nnp', 'nn']), 
     ('格', 'efl', 'nn'): ('TAG100',['格', 'efl', 'nn']),
     ('nnh', '格', 'vb', 'vbt', '助動'): ('TAG101',['nnh', '格', 'vb', 'vbt', '助動']),
     ('助動', '助動'): ('TAG102',['助動', '助動']),
-    ('nn', 'nn', 'nn', 'nn'): ('TAG92',['nn', 'nn', 'nn', 'nn']), 
-    ('nn', 'nn', 'nn'): ('TAG93',['nn', 'nn', 'nn']), 
-    ('nn', 'nn'): ('TAG94',['nn', 'nn']), 
     ('nns', 'vb', '助動', 'nn'): ('TAG201',['nns', 'vb', '助動', 'nn']),
     # 英語
     #('shall','be','deemed','to'): ('DEEMED', ['shall','be','deemed','to']),
@@ -378,7 +379,7 @@ def loader(file, buf):
 
 def  box_hantei(tags):
     if tags[0] in {"cc","cd","cd1","sp","vb","nnt","nnr","nnjv","vbt",
-                   "の","格","記号,空白","副",
+                   "の","格","記号,空白","副","rl",
                    "接","助動","助詞,副助詞／並立助詞／終助詞"}:
         return None
 
@@ -419,8 +420,8 @@ if __name__ == "__main__":
     #load_src("../act-monad/data/tsv/en1", 7)
     #write_file("jp_list.txt",linesTH)
     #write_file("en_list.txt",linesTH)
-    loader("jp_list.txt",linesTH)
-    #loader("jp_list_test.txt",linesTH)
+    #loader("jp_list.txt",linesTH)
+    loader("jp_list_test.txt",linesTH)
     print(f"data: text length={len(linesTH)}")
     #for tmp in linesTH:
     #    print(tmp)
@@ -428,7 +429,8 @@ if __name__ == "__main__":
     get_pattern(linesTH,0)
     print("POSをNX-gram実行完了")
 
-    MX = 5000
+    MX = 50#00
+    START = 0
     # すでに抽出済みの 4-gram 頻度（例）
     # 実際にはあなたの counter.most_common() の結果を使う
     fourgram_freq = counter.most_common(MX)
@@ -440,16 +442,16 @@ if __name__ == "__main__":
     useful_4grams = [g for g in fourgrams if is_useful_4gram(g)]
 
     # 4+4-2 で 6-gram 仮説生成
-    candidates0 = make_Ngram_candidates(useful_4grams,2,6)
-    #candidates1 = make_Ngram_candidates(candidates0,2,10)
-    #candidates = make_Ngram_candidates(candidates1,2,18)
+    candidates6 = make_Ngram_candidates(useful_4grams,2,6)
+    candidates10 = make_Ngram_candidates(candidates6,2,10)
+    candidates18 = make_Ngram_candidates(candidates10,4,16)
     print("POSをNX-gramを合成")
 
-    candidates1 = decompress_list(candidates0)
-    candidates = group_candidates_by_length(candidates1)
+    candidatesA = decompress_list(candidates6)
+    candidates = group_candidates_by_length(candidatesA)
     print("POSの合成を分解完了")
     #for tmp in candidates:
-    #    print(tmp)
+    print(f"length= {len(candidates)}")
 
     # 生データで検定
     #file = "../act-monad/data/stxen.txt"
@@ -458,12 +460,15 @@ if __name__ == "__main__":
 
     # 出現頻度順に表示
     i = 1
+    p = -1
     cnt = 0
     for g, c in validated.most_common(MX):
-        #if is_code(g):
+        p += 1
+        if p < START:
+          continue
 
-        if box_hantei(g) == None:
-            continue
+        #if box_hantei(g) == None:
+        #    continue
         cnt += c
         ccg = classify_ccg(g)
         print("-------------------------------------")

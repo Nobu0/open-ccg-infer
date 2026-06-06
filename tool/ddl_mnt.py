@@ -89,7 +89,8 @@ INSERT INTO box_class_tbl (class_id, name, desc) VALUES
 
 (301, 'NP_SIMPLE', '名詞句（単純）'),
 (302, 'NP_REL', '名詞句（連体修飾あり）'),
-(303, 'NP_ADDR', 'アドレスを含む名詞句'),
+(303, 'NP_ADDR', 'アドレスを含む名詞句、数詞を含む'),
+(304, 'NP_OTHER', 'その他の名詞句等'),
 
 (401, 'CCG_LEFT', 'CCG 左結合（A/B + B → A）'),
 (402, 'CCG_RIGHT', 'CCG 右結合（B + B\\A → A）'),
