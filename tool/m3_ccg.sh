@@ -1,3 +1,7 @@
+#python tool/ccg_step2.py
+python tool/ccg_graphviz.py
+exit
+
 #sqlite3 db/ccgDB.sqlite "UPDATE pos_tbl SET lang = 1 WHERE lang = 'jp';"
 #sqlite3 db/ccgDB.sqlite "UPDATE pos_tbl SET lang = 2 WHERE lang = 'en';"
 

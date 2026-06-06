@@ -6,6 +6,41 @@ DB = "db/ccgDB.sqlite"
 conn = sqlite3.connect(DB)
 cur = conn.cursor()
 
+cur.execute("DROP TABLE IF EXISTS ccg_tree_tbl")
+
+cur.execute("""
+CREATE TABLE ccg_tree_tbl (
+    tree_id     INTEGER PRIMARY KEY AUTOINCREMENT,
+    act_id      INTEGER,
+    lang        INTEGER,
+    node_id     INTEGER,       -- ノード番号（1,2,3,...）
+    parent_id   INTEGER,       -- 親ノード（NULL = root）
+    label       TEXT,          -- CCG カテゴリ (NP, NP/NP)
+    word        TEXT,          -- ノードの語（結合後の語も含む）
+    start_id    INTEGER,       -- 元の開始 token ID
+    end_id      INTEGER,       -- 元の終了 token ID
+    created_at  TEXT DEFAULT CURRENT_TIMESTAMP
+);
+""")
+
+cur.execute("DROP TABLE IF EXISTS ccg_log_tbl")
+
+cur.execute("""
+CREATE TABLE ccg_log_tbl (
+    log_id     INTEGER PRIMARY KEY AUTOINCREMENT,
+    act_id     INTEGER,
+    lang       INTEGER,
+    step_no    INTEGER,      -- 1,2,3,... の縮約ステップ番号
+    left_cat   TEXT,         -- 左のカテゴリ (NP/NP)
+    left_word  TEXT,         -- 左の語
+    right_cat  TEXT,         -- 右のカテゴリ (NP)
+    right_word TEXT,         -- 右の語
+    result_cat TEXT,         -- 結果カテゴリ (NP)
+    result_word TEXT,        -- 結果語
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+""")
+
 cur.execute("DROP TABLE IF EXISTS pos_box_tbl")
 
 #　品詞テーブルから、BOX化するためのテーブル
