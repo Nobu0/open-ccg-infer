@@ -299,6 +299,7 @@ def save_ccg_tree(db, act_id, lang, nodes):
 def ccg_forest_to_dot(forest, graph_name="CCG"):
     lines = []
     lines.append(f'digraph {graph_name} {{')
+    #lines.append('  rankdir=LR;')
     lines.append('  node [shape=box, fontname="IPAGothic"];')
 
     node_id_counter = 1

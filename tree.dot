@@ -1,0 +1,13 @@
+digraph CCG {
+  rankdir=LR;
+  ranksep=1.0;
+  nodesep=0.5;
+  node [shape=box, fontname="IPAGothic"];
+
+  n1 [label="NP\n資源の保存"];
+  n2 [label="NP/NP\n資源の"];
+  n3 [label="NP\n保存"];
+
+  n1 -> n2;
+  n1 -> n3;
+}

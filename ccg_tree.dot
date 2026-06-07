@@ -1,4 +1,8 @@
 digraph CCG {
+  rankdir=LR;
+  ranksep=1.0;
+  nodesep=0.5;
+
   node [shape=box, fontname="IPAGothic"];
   n1 [label="NP\nまぐろ資源"];
   n2 [label="NP\nまぐろ資源の保存資源の保存管理の強化特別措置特別措置法平成八年六月二十一日"];
