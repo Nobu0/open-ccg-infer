@@ -317,8 +317,8 @@ def classify_ngram(text):
 if __name__ == "__main__":
     #load_src("../act-monad/data/tsv/en1", 7)
     #write_file("en_list.txt",linesTH)
-    #loader("en_list.txt",linesTH)
-    loader("en_list_test.txt",linesTH)
+    loader("en_list.txt",linesTH)
+    #loader("en_list_test.txt",linesTH)
     print(f"data: text length={len(linesTH)}")
     #for tmp in linesTH:
     #    print(tmp)
@@ -364,7 +364,7 @@ if __name__ == "__main__":
         print(g, c, ccg, cnt, i, len(g))
         i += 1
     
-    exit()
+    #exit()
     # 出現頻度順に表示
     i = 1
     p = -1

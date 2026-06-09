@@ -71,47 +71,88 @@ PATTERNS6 = {
 }
 PATTERNS = {}
 
+PAT_CLASS = {
+    101:  {typ:'#ADDR_ART', nam:'条（Article）'},
+    102:  {typ:'#ADDR_PAR', nam:'項（Paragraph）'},
+    103:  {typ:'#ADDR_NUM', nam:'号（Item Number）'},
+    104:  {typ:'#ADDR_PAT', nam:'編（Part）'},
+    105:  {typ:'#ADDR_CHA', nam:'章（Chapter）'},
+    106:  {typ:'#ADDR_SEC', nam:'節（Section）'},
+    107:  {typ:'#ADDR_SUB', nam:'款（Subsection）'},
+    108:  {typ:'#ADDR_DIV', nam:'目（Division）'},
+    201:  {typ:'#FIXED_PP', nam:'英語の固定前置詞句'},
+    202:  {typ:'#FIXED_INF', nam:'英語の不定詞句'},
+    301:  {typ:'', nam:"名詞句 (SIMPLE)" },
+    302:  {typ:'', nam:"名詞句（REL）" },
+    303:  {typ:'', nam:"アドレスを含む名詞句、数詞を含む(ADDR)" },
+    304:  {typ:'', nam:"法令での名詞句等(OTHER)" },
+    305:  {typ:'', nam:"その他の名詞句等(REFER)" },
+}
+
+DESC ="品詞列等に基づく BOX 化"
+
+TXT1 =  {('Article'):   101,
+        ('Art'):        101,
+        ('paragraph'):  102,
+        ('item'):       103,
+        ('Part'):       104,
+        ('Chapter'):    105,
+        ('Section'):    106,
+        ('Subsection'): 107,
+        ('Division'):   108,}
+
+PAT2 = {('DT', 'NN'): 301,
+        ('NN', 'NN'): 301,
+        ('JJ', 'NN'): 301,
+        ('NNP', 'NNP'):301,}
+
+PAT3 = {
+      ('IN', 'NN', 'IN'): 201,
+      ('TO', 'VB', 'VBN'): 302,
+      ('NNP', 'NNP', 'CD'): 303,
+      ('NNP', 'CD', 'CD'): 303,
+}
+
+PAT4 = {
+      ('TO', 'VB', 'VBN'): 302,
+      ('NNP','CD',',','CD'):303,
+}
+
+PAT6 ={
+      ('IN', 'DT', 'NN', 'IN', 'DT', 'NN'):302,
+      ('DT', 'NN', 'IN', 'DT', 'JJ', 'NN'):302,
+      ('NN', 'IN', 'DT', 'NNP', 'IN', 'NNP'):302,
+      ('VBN', 'IN', 'DT', 'NN', 'IN', 'DT'):302,
+      ('MD',  'VB', 'VBN', 'TO', 'VB', 'VBN'):302,
+      ('NN', 'NN', 'JJ', 'TO', 'NNP', 'CD'):302,
+}
+
+PAT7 ={
+      ('JJ', 'TO', 'DT', 'NNS', 'IN', 'DT', 'NN'):302,
+}
+
+PAT8 ={
+      ('DT', 'NN', 'IN', 'DT', 'NN', 'IN', 'DT', 'NN'):302,
+}
+
 class Matches:
 
     def seq2(self,pos_seq, txt_seq):
-        MAP = {('Article'):   101,
-              ('Art'):        101,
-              ('paragraph'):  102,
-              ('item'):       103,
-              ('Part'):       104,
-              ('Chapter'):    105,
-              ('Section'):    106,
-              ('Subsection'): 107,
-              ('Division'):   108,}
-        if pos_seq[0] in {'NNP'} and pos_seq[1] in {'CD','NNP','LS'} and txt_seq[0] in MAP:
-            return (MAP[tuple(txt_seq[0])])
-        MAP = {('DT', 'NN'): 301,
-               ('NN', 'NN'): 301,
-               ('JJ', 'NN'): 301,
-               ('NNP', 'NNP'):301,}
-        if tuple(pos_seq[0:2]) in MAP:
-            return (MAP[tuple(pos_seq[0:2])])
+        if pos_seq[0] in {'NNP'} and pos_seq[1] in {'CD','NNP','LS'} and txt_seq[0] in TXT1:
+            return (TXT1[tuple(txt_seq[0])])
+        if tuple(pos_seq[0:2]) in PAT2:
+            return (PAT2[tuple(pos_seq[0:2])])
         return (None, None)
 
     def seq3(self,pos_seq, txt_seq):
-        MAP = {
-         ('IN', 'NN', 'IN'): 201,
-         ('TO', 'VB', 'VBN'): 302,
-         ('NNP', 'NNP', 'CD'): 303,
-         ('NNP', 'CD', 'CD'): 303,
-        }
-        if tuple(pos_seq[0:4]) in MAP:
-            return (MAP[tuple(pos_seq[0:4])])
+        if tuple(pos_seq[0:4]) in PAT3:
+            return (PAT3[tuple(pos_seq[0:4])])
         return (None, None)
 
 
     def seq4(self,pos_seq, txt_seq):
-        MAP = {
-         ('TO', 'VB', 'VBN'): 302,
-         ('NNP','CD',',','CD'):303,
-        }
-        if tuple(pos_seq[0:4]) in MAP:
-            return (MAP[tuple(pos_seq[0:4])])
+        if tuple(pos_seq[0:4]) in PAT4:
+            return (PAT4[tuple(pos_seq[0:4])])
         return (None, None)
 
     #def seq5(self,pos_seq, txt_seq):
@@ -120,46 +161,32 @@ class Matches:
     #    return (None, None)
 
     def seq6(self,pos_seq, txt_seq):
-        MAP={
-        ('IN', 'DT', 'NN', 'IN', 'DT', 'NN'):302,
-        ('DT', 'NN', 'IN', 'DT', 'JJ', 'NN'):302,
-        ('NN', 'IN', 'DT', 'NNP', 'IN', 'NNP'):302,
-        ('VBN', 'IN', 'DT', 'NN', 'IN', 'DT'):302,
-        ('MD',  'VB', 'VBN', 'TO', 'VB', 'VBN'):302,
-        ('NN', 'NN', 'JJ', 'TO', 'NNP', 'CD'):302,
-        }
-        if tuple(pos_seq[:7]) in MAP:
-            return (MAP[tuple(pos_seq[:7])])
+        if tuple(pos_seq[:7]) in PAT6:
+            return (PAT6[tuple(pos_seq[:7])])
         return (None, None)
 
     def seq7(self,pos_seq, txt_seq):
-        MAP={
-          ('JJ', 'TO', 'DT', 'NNS', 'IN', 'DT', 'NN'):302,
-        }
-        if tuple(pos_seq[:8]) in MAP:
-            return (MAP[tuple(pos_seq[:8])])
+        if tuple(pos_seq[:8]) in PAT7:
+            return (PAT7[tuple(pos_seq[:8])])
         return (None, None)
 
     def seq8(self,pos_seq, txt_seq):
-        MAP={
-          ('DT', 'NN', 'IN', 'DT', 'NN', 'IN', 'DT', 'NN'):302,
-        }
-        if tuple(pos_seq[:9]) in MAP:
-            return (MAP[tuple(pos_seq[:9])])
+        if tuple(pos_seq[:9]) in PAT8:
+            return (PAT8[tuple(pos_seq[:9])])
         return (None, None)
 
 
-def is_np_addr(pos_seq, txt_seq):
+def insert_box(pos_seq, txt_seq, id_seq):
     obj = Matches()
-
+    list = []
     for i in {4,3,2,6,7,8}: 
       if len(pos_seq) >= i:
         func = getattr(obj, f"seq{i}")
-        (pos, txt) = func(pos_seq[0:i], txt_seq[0:i])
-        if txt != None:
-          return (pos,txt)
+        class_id = func(pos_seq[0:i+1], txt_seq[0:i+1])
+        if class_id != None:
+          list.append([class_id, pos_seq[0:i+1], txt_seq[0:i+1], id_seq[0:i+1]])
 
-    return (None, None)
+    return list
 
 
 def compress(tokens, patterns=PATTERNS):

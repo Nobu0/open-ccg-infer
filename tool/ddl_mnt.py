@@ -118,6 +118,11 @@ INSERT INTO box_class_tbl (class_id, name, desc) VALUES
 (101, 'ADDR_ART', '条（Article）'),
 (102, 'ADDR_PAR', '項（Paragraph）'),
 (103, 'ADDR_NUM', '号（Item Number）'),
+(104, 'ADDR_PAT', '編（Part）'),
+(105, 'ADDR_CHP', '章（Chapter）'),
+(106, 'ADDR_SEC', '節（Section）'),
+(107, 'ADDR_SUB', '款（Subsection）'),
+(108, 'ADDR_DIV', '目（Division）'),
 
 (201, 'FIXED_PP', '英語の固定前置詞句（in accordance with など）'),
 (202, 'FIXED_INF', '英語の不定詞句（in order to など）'),
