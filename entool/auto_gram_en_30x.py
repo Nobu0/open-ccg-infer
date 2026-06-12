@@ -1,4 +1,5 @@
 import ast
+import sys
 import os
 import re
 from collections import Counter, defaultdict
@@ -235,7 +236,7 @@ def is_code(gram):
 
 def classify_ccg(tags):
     # NP/NP
-    if tags[0] in {"IN", "TO", "助副", "格"}:
+    if tags[0] in {"IN", "TO"}:
         return "NP/NP"
 
     # NP\NP
@@ -243,7 +244,7 @@ def classify_ccg(tags):
         return "NP\\NP"
 
     # S\NP
-    if tags[-1] in {"VB", "VBN", "助動"}:
+    if tags[-1] in {"VB", "VBN"}:
         return "S\\NP"
 
     # S/S
@@ -269,7 +270,7 @@ def  box_hantei(tags):
     if tags[0] in {'SP'}:
         return None
 
-    if tags[-1] in {"SP"}:
+    if not tags[-1].startswith("NN"):
         return None
 
     if "SP" in tags:
@@ -286,35 +287,29 @@ def group_candidates_by_length(candidates):
         groups[len(cand)].add(tuple(cand))
     return groups
 
-preps = {"in", "on", "with", "by", "for", "under", "over", "to", "of"}
+#preps = {"in", "on", "with", "by", "for", "under", "over", "to", "of"}
 
-def classify_ngram(text):
-    t = [w.lower() for w in text]
-
+def get_class_id(g):
+    cnt = 0
     # FIXED_PP (201)
-    if t[0] in preps and t[2] in preps:
-        return 201
-
-    # PP (501)
-    if len(t) == 1 and t[0] in preps:
-        return 501
-
-    # NP_ADDR (303)
-    if any(w.isdigit() for w in t):
-        return 303
-
-    # NP_REL (302)
-    if any(w in preps for w in t):
-        return 302
-
-    # NP_SIMPLE (301)
-    if len(t) <= 3:
-        return 301
-
-    # その他
-    return 304
+    for pos in g:
+        if pos in {'NNP'}:
+            cnt += 1
+    if cnt > 1:
+        return 305
+    if cnt == 0:
+        return 304
+    return None
 
 if __name__ == "__main__":
+    args = sys.argv
+
+    print(f"実行ファイル名: {args[0]}")
+    print(f"第1引数: {args[1]}")
+
+    NX_Gram = 6
+    if args[1] == 4:
+        NX_Gram = 4
     #load_src("../act-monad/data/tsv/en1", 7)
     #write_file("en_list.txt",linesTH)
     loader("en_list.txt",linesTH)
@@ -339,14 +334,17 @@ if __name__ == "__main__":
     useful_4grams = [g for g in fourgrams if is_useful_4gram(g)]
 
     # 4+4-2 で 6-gram 仮説生成
-    candidates6 = make_Ngram_candidates(useful_4grams,2,6)
-    #candidates10 = make_Ngram_candidates(candidates6,2,10)
-    #candidates18 = make_Ngram_candidates(candidates10,4,16)
     print("POSをNX-gramを合成")
-
-    candidatesA = decompress_list(candidates6)
-    candidatesB = decompress_list(useful_4grams)
-    candidates = group_candidates_by_length(candidatesB)
+    candidatesNX=[]
+    if NX_Gram == 4:
+      candidatesNX = decompress_list(useful_4grams)
+    else:
+      candidates6 = make_Ngram_candidates(useful_4grams,2,6)
+      #candidates10 = make_Ngram_candidates(candidates6,2,10)
+      #candidates18 = make_Ngram_candidates(candidates10,4,16)
+      candidatesNX = decompress_list(candidates6)
+    
+    candidates = group_candidates_by_length(candidatesNX)
     print("POSの合成を分解完了")
     #for tmp in candidates:
     print(f"length= {len(candidates)}")
@@ -360,8 +358,12 @@ if __name__ == "__main__":
     p = -1
     cnt = 0
     for g, c in validated.most_common(MX):
-        ccg = classify_ccg(g)
-        print(g, c, ccg, cnt, i, len(g))
+        if box_hantei(g) == None:
+            continue
+        cls_id = get_class_id(g)
+        if cls_id == None:
+            continue
+        print(g, c, cnt, i, len(g), cls_id)
         i += 1
     
     #exit()
@@ -373,17 +375,15 @@ if __name__ == "__main__":
         p += 1
         if p < START:
           continue
-
-        #if box_hantei(g) == None:
-        #    continue
+        if box_hantei(g) == None:
+            continue
+        cls_id = get_class_id(g)
+        if cls_id == None:
+            continue
         cnt += c
-        ccg = classify_ccg(g)
         print("-------------------------------------")
-        print(g, c, ccg, cnt, i, len(g))
+        print('###', g, c, cnt, i, len(g), cls_id)
         i += 1    
-        #for g in box_map[g]:
-        #  if is_code(g):
-        #    print(g, i)
         cc = 0
         #for ex in sorted(box_map[g]["examples"].items(), key=lambda x: x[1], reverse=True):
         #sublist = box_map[g]["examples"]
@@ -391,11 +391,11 @@ if __name__ == "__main__":
         #print(data)
         sorted_data = sorted(data, key=lambda x: x['count'], reverse=True)
         for item in sorted_data:
-            class_id = classify_ngram(item["text"])
+            #class_id = get_class_id(item["text"])
             if item["count"] < 2:
                 break
-            print(item, class_id)
-            #if cc > 10000:  break
+            print(item, cls_id)
+            if cc > 10:  break
             cc += 1
 
         #for info in sorted(sublist.itmes(), key=lambda x: x["count"], reverse=True):
