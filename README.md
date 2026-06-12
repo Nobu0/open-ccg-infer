@@ -270,12 +270,13 @@ CCG の辞書カテゴリが安定し、構文木が破綻しない。
 
 ## 300番台と CCG の “直接対応表”
 
-BOX NPの内部構造 CCGカテゴリ 説明
-301 普通の名詞句 NP the purpose, the Act
-302 関係節を含むNP NP（内部に S/NP） the man who left
-303 固定句NP NP（辞書的） in accordance with the Act
-304 その他の一般NP NP paragraph, item, provision
-305 固有名詞連結・特殊NP NP United Nations General Assembly
+| BOX | NPの内部構造         | CCGカテゴリ       | 説明                            |
+| --- | -------------------- | ----------------- | ------------------------------- |
+| 301 | 普通の名詞句         | NP                | the purpose, the Act            |
+| 302 | 関係節を含むNP       | NP（内部に S/NP） | the man who left                |
+| 303 | 固定句NP             | NP（辞書的）      | in accordance with the Act      |
+| 304 | その他の一般NP       | NP                | paragraph, item, provision      |
+| 305 | 固有名詞連結・特殊NP | NP                | United Nations General Assembly |
 
 すべて最終的には NP だが、
 内部構造が違うため BOX で分けている。
