@@ -18,7 +18,7 @@ linesTH = []
 
 box_map = {}
 
-PATTERNS6 = {
+PATTERNS = {
     # 英語
     ('JJ', 'TO', 'DT', 'NNS', 'IN'):1,
     ('JJ','TO','NNP','CD'):1,
@@ -59,13 +59,69 @@ PATTERNS6 = {
     ('IN', 'RB', 'JJR'):1, #add
     ('VB', 'VBN', 'TO', 'VB'):1, #add
     ('MD','VBG','TO','IN'):1, # add
+    ('IN', 'RB', 'JJR', 'IN'):1, #add
+    ('IN', 'NNP', 'CD', 'IN', 'DT', 'NNP'):1, #add
+    ('IN', 'NNS', 'WRB', 'EX', 'VBZ'):1, #add
+    ('IN', 'WDT', 'CD', 'NNS', 'VBP', 'VBN', 'IN'):1, #add
+    ('IN', 'WDT', 'CD', 'NNS', 'VBP', 'VBN', 'IN'):1, #add
+    ('IN', 'NNS', 'WRB', 'DT', 'NNS', 'IN'):1, #add
+    ('WRB', 'DT', 'NNP', 'NNP', 'VBZ', 'VBN'):1, #add
+    ('WRB', 'EX', 'VBP', 'CD', 'CC', 'JJR'):1, #add
+    ('WRB', 'DT', 'NNP', 'NNP', 'VBZ'):1, #add
+    ('WDT', 'VBP', 'VBN', 'IN', 'NNS', 'IN'):1, #add
+    ('IN', 'WP', 'CD', 'NNS', 'VBP', 'RB', 'VBN'):1, #add
+    ('WRB', 'CD', 'NNS', 'VBP', 'VBN', 'IN'):1, #add
+    ('WDT', 'VBZ', 'VBN', 'IN', 'NNS', 'IN'):1, #add
+    ('WDT', 'VBP', 'VBN', 'IN', 'NNS', 'IN'):1, #add
+    ('WDT', 'VBP', 'TO', 'VB', 'VBN', 'IN'):1, #add
+    ('WDT', 'VBP', 'VBN', 'TO', 'VB', 'VBN'):1, #add
+    ('WRB', 'DT', 'NNP', 'IN', 'DT', 'NNP', 'NNP'):1, #add
+    ('WRB', 'DT', 'NNP', 'IN', 'NNP', 'VBZ'):1, #add
+    ('WRB', 'DT', 'NN', 'IN', 'NN', 'VBZ', 'VBN'):1, #add
+    ('WP', 'VBZ', 'VBN', 'TO', 'VB', 'DT', 'NN', 'IN'):1, #add
+    ('WRB', 'DT', 'NN', 'VBZ', 'VBN', 'VBN', 'IN'):1, #add
+    ('WRB', 'VBG', 'DT', 'NN', 'IN', 'NN', 'IN'):1, #add
+    ('WRB', 'DT', 'JJ', 'NN', 'NN', 'VBZ', 'VBN'):1, #add
+    ('WRB', 'DT', 'VBN', 'NN', 'NN', 'VBZ'):1, #add
+    ('IN', 'NNS', 'WRB', 'DT', 'NNS', 'IN'):1, #add
+    ('WRB', 'DT', 'NNP', 'NNP', 'NNP', 'NNP', 'VBZ', 'VBN'):1, #add
+    ('WDT', 'VBZ', 'VBN', 'DT', 'NN', 'IN', 'NN'):1, #add
+    ('WDT', 'VBZ', 'VBN', 'IN', 'NN', 'IN'):1, #add
+    ('WRB', 'DT', 'NN', 'VBZ', 'VBN', 'DT', 'NN', 'IN'):1, #add
+    ('WP', 'VBZ', 'VBN', 'DT', 'NN', 'IN', 'NN', 'IN'):1, #add
+    ('WRB', 'VBG', 'DT', 'NN', 'IN', 'NN', 'IN'):1, #add
+    ('WRB', 'NN', 'VBZ', 'VBN', 'DT', 'NN', 'IN'):1, #add
+    ('WRB', 'DT', 'NNP', 'NNP', 'VBZ', 'DT', 'NN'):1, #add
+    ('WRB', 'DT', 'NNP', 'VBZ', 'VBN'):1, #add
+    ('WRB', 'DT', 'JJ', 'NN', 'VBZ', 'VBN', 'DT', 'NN'):1, #add
+    ('WRB', 'DT', 'NN', 'NN', 'VBZ', 'VBN'):1, #add
+    ('WP', 'VBZ', 'TO', 'VB', 'DT', 'NN', 'IN', 'NN'):1, #add
+    ('WDT', 'VBP', 'VBN', 'TO', 'VB', 'JJ'):1, #add
+    ('WRB', 'DT', 'NN', 'NN', 'VBZ', 'VBN', 'IN'):1, #add
+    ('WRB', 'DT', 'NNS', 'VBN', 'IN', 'NNP'):1, #add 
+    ('WRB', 'DT', 'NNS', 'VBN', 'IN', 'NNP', 'CD'):1, #add
+    ('IN', 'NNS', 'WRB', 'DT', 'JJ', 'NN', 'NN'):1, #add
+    ('IN', 'PRP', 'VBZ', 'JJ', 'TO', 'VB'):1, #add
+    ('WRB', 'DT', 'NNP', 'VBZ', 'VBN', 'DT', 'NN'):1, #add
+    ('WDT', 'VBZ', 'DT', 'NNS', 'VBN', 'IN'):1, #add
+    ('IN', 'NNS', 'WRB', 'DT', 'NN', 'VBN', 'IN'):1, #add
+    ('WDT', 'VBZ', 'VBN', 'IN', 'NN', 'IN'):1, #add
+    ('WRB', 'NN', 'VBZ', 'VBN', 'DT', 'NN', 'IN'):1,
+    ('WRB', 'DT', 'NN', 'IN', 'NN', 'IN', 'NN'):1,
+    ('WRB', 'DT', 'NN', 'VBZ', 'VBN', 'VBN', 'IN'):1,
+    ('WRB', 'DT', 'NNP', 'NNP', 'VBZ'):1,
+    ('WDT', 'VBP', 'VBN', 'IN', 'NNS', 'IN'):1,
+    ('IN', 'NNS', 'WRB'):1, #add
+    ('IN', 'WDT'):1, #add
     ('MD','RB','VB'):1, # add
     ('MD','VB','IN'):1, # add
     ('VB','TO','IN'):1, # add
     ('VBP','TO','IN'):1, # add
     ('VBZ','TO','IN'):1, # add
     ('VBD','TO','IN'):1, # add
+    ('VBZ', 'TO', 'VB'):1, #add
     ('JJ','JJ','NN'):1, # add
+    ('WRB', 'PRP', 'VBZ'):1, #add
     ('IN','WDT'):1, #add
     ('WP','VBZ'):1, #add
     ('IN','VBN','IN'):1,
@@ -75,16 +131,51 @@ PATTERNS6 = {
     ('IN','DT','NN'):1,
     ('TO','DT','NN'):1,
     ('NNP','CD'):1,
+    ('DT','NN'):1,
     ('IN','DT'):1,
     ('TO','DT'):1,
     ('JJ','NN'):1,
     ('JJ','IN'):1,
     ('JJ','TO'):1,
 }
-PATTERNS = {}
+
+PATTERN_INDEX = defaultdict(list)
+
+def init_pattern():      
+    for pat in PATTERNS.keys():
+        first = pat[0]              # pat は tuple
+        PATTERN_INDEX[first].append(pat)
+
+    # 最長一致優先
+    for first in PATTERN_INDEX:
+        PATTERN_INDEX[first].sort(key=len, reverse=True)
+
+def compress(tokens):
+    i = 0
+    result = []
+
+    while i < len(tokens):
+        first = tokens[i]
+        matched = False
+
+        # 先頭品詞が一致するパターンだけを見る
+        for pat in PATTERN_INDEX.get(first, []):
+            L = len(pat)
+            # tokens[i:i+L] は list → tuple に変換して比較
+            if tuple(tokens[i:i+L]) == pat:
+                result.append("_".join(pat))
+                i += L
+                matched = True
+                break
+
+        if not matched:
+            result.append(tokens[i])
+            i += 1
+
+    return result
 
 
-def compress(tokens, patterns=PATTERNS):
+def xxxxcompress(tokens, patterns=PATTERNS):
     """
     patterns: PATTERNS で品詞を結合
     """
@@ -126,7 +217,7 @@ def decompress(tokens, patterns=PATTERNS):
     return result
 
 
-def append_box(key, tokens):
+def append_box(key, tokens, src):
       sky = tuple(tokens)
       if key not in box_map:
         box_map[key] = {
@@ -138,10 +229,12 @@ def append_box(key, tokens):
       if sky not in box_map[key]["examples"]:
         box_map[key]["examples"][sky] = {
           "count": 0,
-          "text": ""
+          "text": "",
+          "src": ""
         }
       box_map[key]["examples"][sky]["count"] += 1  
       box_map[key]["examples"][sky]["text"] = tokens
+      box_map[key]["examples"][sky]["src"] = src
 
 
 def load_src(dir, no, mx=635):
@@ -214,42 +307,298 @@ def sliding_windows(seq, n):
     for i in range(len(seq) - n + 1):
         yield i, seq[i:i+n]
 
-def validate_Ngrams_core(tokens, toktxt, candidates, ngm, counter):
-    for i, win in sliding_windows(tokens, ngm):
-        g = tuple(win)
-        if g in candidates:
-            tx = toktxt[i:i+ngm]
-            append_box(g, tx)
-            counter[g] += 1
+##################################################
+# 句を範囲を決定する関数軍
+##################################################
+def is_main_verb(pos, txt):
+    """主節動詞の開始判定"""
+    # MD + VB, VB*, BE/HAVE + VBN/VBG などをまとめて扱う
+    if pos in ("VB", "VBD", "VBP", "VBZ"):
+        return True
+    if pos == "MD":
+        return True
+    if pos in ("VBN", "VBG") and txt not in ("prescribed", "provided", "given", "granted"):
+        # provided/prescribed は後置修飾なので除外
+        return True
+    return False
+
+
+def is_relation_clause_start(tokens, i):
+    """ , which / , who / , where / , when / , that の判定 """
+    if tokens[i][1] != ",":
+        return False
+    if i+1 >= len(tokens):
+        return False
+
+    pos, txt = tokens[i+1]
+
+    # 非制限用法の関係節
+    if pos in ("WDT", "WP", "WRB"):
+        return True
+    if txt.lower() == "that":
+        return True
+
+    return False
+
+
+def is_condition_clause_start(tokens, i):
+    """ provided, however, that / if / unless / when / where """
+    txt = tokens[i][1].lower()
+
+    if txt == "provided":
+        # provided, however, that
+        return True
+    if txt in ("if", "unless", "when", "where"):
+        return True
+
+    return False
+
+
+def is_np_continuation(pos, txt):
+    """NP 継続条件（簡略版）"""
+    if pos in ("NN", "NNS", "NNP", "NNPS", "DT", "JJ", "JJR", "JJS", "RB", "CD", "PRP$", "POS"):
+        return True
+
+    # PP の開始
+    if pos == "IN":
+        return True
+
+    # 後置修飾（provided/prescribed/given/granted）
+    if pos in ("VBN", "VBG") and txt.lower() in ("prescribed", "provided", "given", "granted"):
+        return True
+
+    # etc. は NP 内部
+    if txt.lower() == "etc.":
+        return True
+
+    return False
+
+
+def extract_np(tokens):
+    """
+    tokens = [(POS, text), ...]
+    NP の開始位置は外部で決める
+    ここでは終端だけを決める
+    """
+    i = 0
+    L = len(tokens)
+
+    while i < L:
+        pos, txt = tokens[i]
+
+        # --- 終端条件 ---
+        if is_main_verb(pos, txt):
+            break
+        if txt in (".", ";"):
+            break
+        if is_relation_clause_start(tokens, i):
+            break
+        if is_condition_clause_start(tokens, i):
+            break
+
+        # --- 2トークンをまたぐ継続条件 ---
+        if i > 0:
+            prev_pos, prev_txt = tokens[i-1]
+
+            # IN の直後の DT/JJ/NN は PP の内部 → 継続
+            if prev_pos == "IN" and pos in ("DT", "JJ", "JJR", "JJS", "NN", "NNS", "NNP", "NNPS"):
+                i += 1
+                continue
+
+        # --- 1トークンで判定できる継続条件 ---
+        if is_np_continuation(pos, txt):
+            i += 1
+            continue
+
+        # --- どちらでもない → 終端 ---
+        break
+
+    return tokens[:i]
+
+def xxxextract_np(tokens):
+    """
+    tokens = [(POS, text), ...]
+    NP の開始は tokens[0] と仮定
+    終端条件が来るまで伸ばす
+    """
+    i = 0
+    L = len(tokens)
+
+    while i < L:
+        pos, txt = tokens[i]
+
+        # --- 終端条件チェック ---
+        # 1. 主節動詞
+        if is_main_verb(pos, txt):
+            break
+
+        # 2. 文末記号
+        if txt in (".", ";"):
+            break
+
+        # 3. , + wh*
+        if is_relation_clause_start(tokens, i):
+            break
+
+        # 4. provided / if / unless / when / where
+        if is_condition_clause_start(tokens, i):
+            break
+
+        # --- 継続条件 ---
+        if is_np_continuation(pos, txt):
+            i += 1
+            continue
+
+        # どちらでもない → 終端
+        break
+
+    # i は終端位置
+    return tokens[:i]
+
+def find_np_start(tokens, start_i, end_i):
+    """
+    tokens = [(POS, text), ...]
+    start_i = validate_Ngrams でヒットした位置（i）
+    ここから左方向に遡って NP の開始位置を決める
+    """
+
+    i = start_i
+    lng = len(tokens)
+    # 左方向に遡る
+    while i > end_i and i < lng:
+        #print(i)
+        pos, txt = tokens[i-1]
+
+        # --- ここで止める条件 ---
+        if pos == "IN":      # of / in / with / by の前は NP の外
+            break
+        if pos == "CC":      # and/or の前は別 NP
+            break
+        if pos in ("VB", "VBD", "VBP", "VBZ", "VBN", "MD"):
+            break
+
+        # --- NP 開始条件（遡ってよい） ---
+        if pos in ("DT", "JJ", "JJR", "JJS", "RB", "CD", "NN", "NNS", "NNP", "NNPS", "PRP$", "POS"):
+            i -= 1
+            continue
+
+        # その他は安全のため停止
+        break
+
+    return i
+
+def extract_WH_clause(tokens):
+    i = 0
+    L = len(tokens)
+
+    while i < L:
+        pos, txt = tokens[i]
+
+        # 終端条件
+        if txt in (",", ";", "."):
+            break
+        if pos in ("VB", "VBD", "VBP", "VBZ", "MD"):
+            break
+        if txt.lower() in ("and", "or"):
+            break
+        if txt.lower() == "provided":
+            break
+
+        i += 1
+
+    return tokens[:i]
 
 def validate_Ngrams(src, cand_by_len):
     counter = Counter()
-
+    dbg = 0
     for toks in src:
         tokens = [pos for (pos,txt) in toks]
         toktxt = [txt for (pos,txt) in toks]
         L = len(tokens)
+        #if dbg > 2:
+        #    break
+        dbg += 1
+        #wide = 15 if (L > 0 and tokens[0].startswith("W")) else 15
 
-        # すべての長さの候補について検定
         for ngm, candset in cand_by_len.items():
             if L < ngm:
                 continue
 
             # 初期ウィンドウ
             window = tuple(tokens[:ngm])
-            if window in candset:
-                append_box(window, toktxt[:ngm])
-                counter[window] += 1
 
-            # ローリングウィンドウ
-            for i in range(1, L - ngm + 1):
-                window = window[1:] + (tokens[i+ngm-1],)
+            # i=0 から L-ngm まで統一処理
+            for i in range(0, L - ngm + 1):
+
+                # i>0 のときだけローリング更新
+                if i > 0:
+                    window = window[1:] + (tokens[i+ngm-1],)
+                
+                class_id = get_class_id(window)
                 if window in candset:
-                    append_box(window, toktxt[i:i+ngm])
+                    tsrc = toktxt[i:i+ngm+10]
+                    #append_box(window, toktxt[i:i+ngm+wide])
                     counter[window] += 1
+
+                    # tokens = [(POS, text), ...] 全文
+                    # i = N-gram の開始位置（validate_Ngrams のローリング位置）
+                    #print("window=>",window)
+                    #print("src=>",toks)
+                    if class_id == 503: # WH句
+                        #print(503,window)
+                        tmptoks = toks[i:i+ngm] + extract_WH_clause(toks[i+ngm:])
+                        txt = [txt for (_, txt) in tmptoks]  # NP のテキスト
+                    else:    
+                      np_start = find_np_start(toks[i-1:], i+ngm-1, ngm)
+                      #print("start=>",np_start)
+                      # np_start から後ろだけを渡して、終端を決める
+                      np_slice = toks[np_start:]          # ここからが「NP 候補」
+                      #print("slice=>",np_slice)
+                      np_tokens = extract_np(np_slice)      # 終端関数で NP 部分だけ切り出す
+                      #print("tokens=>",np_tokens)
+
+                      # 元のインデックスに戻す
+                      np_end = np_start + len(np_tokens)
+                      txt = [txt for (_, txt) in toks[i:np_end]]  # NP のテキスト
+                      #print("txt=>",txt)
+
+                    # これで [np_start : np_end] が「NP 全体」
+                    append_box(
+                        window,              # N-gram 自体
+                        txt,
+                        tsrc
+                        #[txt for (_, txt) in toks[np_start:np_end]]  # NP のテキスト
+                    )
 
     return counter
 
+
+def validate_Ngrams_simple(src, cand_by_len):
+    counter = Counter()
+    for toks in src:
+        tokens = [pos for (pos,txt) in toks]
+        toktxt = [txt for (pos,txt) in toks]
+        L = len(tokens)
+
+        for ngm, candset in cand_by_len.items():
+            if L < ngm:
+                continue
+
+            # 初期ウィンドウ
+            window = tuple(tokens[:ngm])
+
+            # i=0 から L-ngm まで統一処理
+            for i in range(0, L - ngm + 1):
+
+                # i>0 のときだけローリング更新
+                if i > 0:
+                    window = window[1:] + (tokens[i+ngm-1],)
+
+                if window in candset:
+                    append_box2(window, toktxt[i:i+ngm])
+                    counter[window] += 1
+
+    return counter
 
 def ngrams(tokens, n=4):
     return [tuple(tokens[i:i+n]) for i in range(len(tokens)-n+1)]
@@ -258,7 +607,7 @@ def make_ngrams(seq, n):
     return [tuple(seq[i:i+n]) for i in range(len(seq)-n+1)]
 
 def nx_ngram(pos_seq, n=10, pat=PATTERNS):
-    key = compress(pos_seq, pat)  # cdhd+cd+nnt を合体
+    key = compress(pos_seq)  # cdhd+cd+nnt を合体
     return make_ngrams(key, n)            # 10-gram を取る
 
 def ngram_freq(tokens, n=4, pat=PATTERNS):
@@ -335,15 +684,16 @@ def group_candidates_by_length(candidates):
 #preps = {"in", "on", "with", "by", "for", "under", "over", "to", "of"}
 
 def get_class_id(g):
-    cnt = 0
     # FIXED_PP (201)
+    if g[0] in {'IN'}: # PP 
+        return 501
+    if g[0] in {'RB'}: # 副詞句ADV
+        return 502
+    if g[0].startswith('W'): #W系CLAUSE
+        return 503
     for pos in g:
-        if pos in {'NNP'}:
-            cnt += 1
-    if cnt > 1:
-        return 305
-    if cnt == 0:
-        return 304
+        if pos.startswith("V"):
+            return 403
     return None
 
 def extract_vp_boxes(pos_seq, token, existing_boxes):
@@ -402,15 +752,16 @@ if __name__ == "__main__":
     NX_Gram = 6
     if args[1] == 4:
         NX_Gram = 4
-    #load_src("../act-monad/data/tsv/en1", 7)
-    #write_file("en_list.txt",linesTH)
+    init_pattern()
+    ####load_src("../act-monad/data/tsv/en1", 7)
+    ####write_file("en_list.txt",linesTH)
     loader("en_list.txt",linesTH)
     #loader("en_list_test.txt",linesTH)
     print(f"data: text length={len(linesTH)}")
     #for tmp in linesTH:
     #    print(tmp)
     print("POSをロード完了")
-    get_pattern(linesTH,PATTERNS6)
+    get_pattern(linesTH,PATTERNS)
     print("POSをNX-gram実行完了")
 
     MX = 5000
@@ -486,7 +837,8 @@ if __name__ == "__main__":
             #class_id = get_class_id(item["text"])
             if item["count"] < 2:
                 break
-            print(item, cls_id)
+            print("T:",item["count"], item["text"], cls_id)
+            print("S:",item["count"], item["src"], cls_id)
             if cc > 10:  break
             cc += 1
 
