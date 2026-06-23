@@ -1,7 +1,7 @@
 
-#python entool/view_box.py
+python entool/view_box.py
 #sqlite3 db/ccgDB.sqlite "SELECT * from ccg_tree_tbl WHERE lang=2"
-#exit
+exit
 
 echo "ccg_tree_tbl count"
 sqlite3 db/ccgDB.sqlite "SELECT count(*) from ccg_tree_tbl WHERE lang=2"

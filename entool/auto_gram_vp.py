@@ -375,18 +375,17 @@ def is_np_continuation(pos, txt):
 
 
 def extract_np(tokens):
-    """
-    tokens = [(POS, text), ...]
-    NP の開始位置は外部で決める
-    ここでは終端だけを決める
-    """
     i = 0
     L = len(tokens)
 
     while i < L:
         pos, txt = tokens[i]
 
-        # --- 終端条件 ---
+        # --- 強制終端（法令文専用） ---
+        if txt.lower() in ("shall", "may", "must", "can", "will", "should"):
+            break
+
+        # --- 通常の終端条件 ---
         if is_main_verb(pos, txt):
             break
         if txt in (".", ";"):
@@ -396,96 +395,46 @@ def extract_np(tokens):
         if is_condition_clause_start(tokens, i):
             break
 
-        # --- 2トークンをまたぐ継続条件 ---
+        # --- IN の直後の DT/JJ/NN は PP 継続 ---
         if i > 0:
             prev_pos, prev_txt = tokens[i-1]
-
-            # IN の直後の DT/JJ/NN は PP の内部 → 継続
             if prev_pos == "IN" and pos in ("DT", "JJ", "JJR", "JJS", "NN", "NNS", "NNP", "NNPS"):
                 i += 1
                 continue
 
-        # --- 1トークンで判定できる継続条件 ---
+        # --- 単独継続条件 ---
         if is_np_continuation(pos, txt):
             i += 1
             continue
 
-        # --- どちらでもない → 終端 ---
         break
 
     return tokens[:i]
 
-def xxxextract_np(tokens):
-    """
-    tokens = [(POS, text), ...]
-    NP の開始は tokens[0] と仮定
-    終端条件が来るまで伸ばす
-    """
-    i = 0
-    L = len(tokens)
-
-    while i < L:
-        pos, txt = tokens[i]
-
-        # --- 終端条件チェック ---
-        # 1. 主節動詞
-        if is_main_verb(pos, txt):
-            break
-
-        # 2. 文末記号
-        if txt in (".", ";"):
-            break
-
-        # 3. , + wh*
-        if is_relation_clause_start(tokens, i):
-            break
-
-        # 4. provided / if / unless / when / where
-        if is_condition_clause_start(tokens, i):
-            break
-
-        # --- 継続条件 ---
-        if is_np_continuation(pos, txt):
-            i += 1
-            continue
-
-        # どちらでもない → 終端
-        break
-
-    # i は終端位置
-    return tokens[:i]
-
-def find_np_start(tokens, start_i, end_i):
-    """
-    tokens = [(POS, text), ...]
-    start_i = validate_Ngrams でヒットした位置（i）
-    ここから左方向に遡って NP の開始位置を決める
-    """
-
+def find_np_start(tokens, start_i, end_i, dbg=0):
     i = start_i
     lng = len(tokens)
-    # 左方向に遡る
-    while i > end_i and i < lng:
-        #print(i)
-        pos, txt = tokens[i-1]
 
+    while i > (start_i - end_i) and i < lng:
+        pos, txt = tokens[i]
+        if dbg == 1:
+            print("i=",i,pos,txt)
         # --- ここで止める条件 ---
-        if pos == "IN":      # of / in / with / by の前は NP の外
-            break
-        if pos == "CC":      # and/or の前は別 NP
-            break
-        if pos in ("VB", "VBD", "VBP", "VBZ", "VBN", "MD"):
+        # IN の前には遡らない（NP は IN の直後から始まる）
+        # 主節動詞の前には遡らない
+        if pos in ("VB", "VBD", "VBP", "VBZ", "MD", "IN", "TO", "CC"):
             break
 
-        # --- NP 開始条件（遡ってよい） ---
-        if pos in ("DT", "JJ", "JJR", "JJS", "RB", "CD", "NN", "NNS", "NNP", "NNPS", "PRP$", "POS"):
+        # --- 遡ってよい条件 ---
+        if pos in ("DT", "JJ", "JJR", "JJS", "RB", "CD",
+                    "NN", "NNS", "NNP", "NNPS", "PRP$", "POS"):
             i -= 1
             continue
 
-        # その他は安全のため停止
         break
 
     return i
+
 
 def extract_WH_clause(tokens):
     i = 0
@@ -495,7 +444,7 @@ def extract_WH_clause(tokens):
         pos, txt = tokens[i]
 
         # 終端条件
-        if txt in (",", ";", "."):
+        if txt in (",", ";", ".", "(", ")"):
             break
         if pos in ("VB", "VBD", "VBP", "VBZ", "MD"):
             break
@@ -508,70 +457,66 @@ def extract_WH_clause(tokens):
 
     return tokens[:i]
 
+def text_trim(txt):                   
+    bad_tail = {"the", "a", "an", "(", ":", ")"}
+    while txt and txt[-1].lower() in bad_tail:
+        txt = txt[:-1]
+    return txt
+
 def validate_Ngrams(src, cand_by_len):
     counter = Counter()
-    dbg = 0
     for toks in src:
         tokens = [pos for (pos,txt) in toks]
         toktxt = [txt for (pos,txt) in toks]
         L = len(tokens)
-        #if dbg > 2:
-        #    break
-        dbg += 1
-        #wide = 15 if (L > 0 and tokens[0].startswith("W")) else 15
 
         for ngm, candset in cand_by_len.items():
             if L < ngm:
                 continue
 
-            # 初期ウィンドウ
-            window = tuple(tokens[:ngm])
-
             # i=0 から L-ngm まで統一処理
             for i in range(0, L - ngm + 1):
 
-                # i>0 のときだけローリング更新
-                if i > 0:
-                    window = window[1:] + (tokens[i+ngm-1],)
+                window = tuple(tokens[i:i+ngm])
                 
                 class_id = get_class_id(window)
                 if window in candset:
+
                     tsrc = toktxt[i:i+ngm+10]
-                    #append_box(window, toktxt[i:i+ngm+wide])
                     counter[window] += 1
 
-                    # tokens = [(POS, text), ...] 全文
-                    # i = N-gram の開始位置（validate_Ngrams のローリング位置）
-                    #print("window=>",window)
-                    #print("src=>",toks)
                     if class_id == 503: # WH句
-                        #print(503,window)
                         tmptoks = toks[i:i+ngm] + extract_WH_clause(toks[i+ngm:])
-                        txt = [txt for (_, txt) in tmptoks]  # NP のテキスト
+                        txt = text_trim([txt for (_, txt) in tmptoks])  # NP のテキスト
                     else:    
-                      np_start = find_np_start(toks[i-1:], i+ngm-1, ngm)
-                      #print("start=>",np_start)
-                      # np_start から後ろだけを渡して、終端を決める
-                      np_slice = toks[np_start:]          # ここからが「NP 候補」
-                      #print("slice=>",np_slice)
-                      np_tokens = extract_np(np_slice)      # 終端関数で NP 部分だけ切り出す
-                      #print("tokens=>",np_tokens)
+                        np_start = find_np_start(toks, i+ngm, ngm)
+                        np_slice = toks[np_start:]          # ここからが「NP 候補」
+                        np_tokens = extract_np(np_slice)      # 終端関数で NP 部分だけ切り出す
+                        np_end = np_start + len(np_tokens)
+                        txt = text_trim([txt for (_, txt) in toks[i:np_end]])  # NP のテキスト
 
-                      # 元のインデックスに戻す
-                      np_end = np_start + len(np_tokens)
-                      txt = [txt for (_, txt) in toks[i:np_end]]  # NP のテキスト
-                      #print("txt=>",txt)
-
-                    # これで [np_start : np_end] が「NP 全体」
                     append_box(
                         window,              # N-gram 自体
                         txt,
                         tsrc
-                        #[txt for (_, txt) in toks[np_start:np_end]]  # NP のテキスト
                     )
 
     return counter
 
+def detect_offset(tokens, i, ngm, window):
+    """
+    tokens: POS のリスト
+    i: validate_Ngrams の window の開始位置
+    ngm: N-gram 長
+    window: 現在の window (tuple of POS)
+    """
+    # 文中の実際の N-gram
+    actual = tuple(tokens[i:i+ngm])
+
+    # window と文中の N-gram が一致していなければズレ
+    if actual != window:
+        return True, actual
+    return False, actual
 
 def validate_Ngrams_simple(src, cand_by_len):
     counter = Counter()
@@ -599,6 +544,7 @@ def validate_Ngrams_simple(src, cand_by_len):
                     counter[window] += 1
 
     return counter
+
 
 def ngrams(tokens, n=4):
     return [tuple(tokens[i:i+n]) for i in range(len(tokens)-n+1)]
@@ -743,6 +689,8 @@ def is_vp_extend(word, pos, token, pos_seq, j, existing_boxes):
         return True
     return False
 
+# 品詞パターンの取得とトークンリストの最終形までを検証するツール
+# DBへの実登録は行わない。
 if __name__ == "__main__":
     args = sys.argv
 
@@ -760,9 +708,9 @@ if __name__ == "__main__":
     print(f"data: text length={len(linesTH)}")
     #for tmp in linesTH:
     #    print(tmp)
-    print("POSをロード完了")
+    #print("POSをロード完了")
     get_pattern(linesTH,PATTERNS)
-    print("POSをNX-gram実行完了")
+    #print("POSをNX-gram実行完了")
 
     MX = 5000
     START = 0
@@ -777,7 +725,7 @@ if __name__ == "__main__":
     useful_4grams = [g for g in fourgrams if is_useful_4gram(g)]
 
     # 4+4-2 で 6-gram 仮説生成
-    print("POSをNX-gramを合成")
+    #print("POSをNX-gramを合成")
     candidatesNX=[]
     if NX_Gram == 4:
       candidatesNX = decompress_list(useful_4grams)
@@ -788,14 +736,14 @@ if __name__ == "__main__":
       candidatesNX = decompress_list(candidates6)
     
     candidates = group_candidates_by_length(candidatesNX)
-    print("POSの合成を分解完了")
+    #print("POSの合成を分解完了")
     #for tmp in candidates:
-    print(f"length= {len(candidates)}")
+    #print(f"length= {len(candidates)}")
 
     # 生データで検定
     #file = "../act-monad/data/stxen.txt"
     validated = validate_Ngrams(linesTH, candidates)
-    print("POSのパターンでテキストを取り出し完了")
+    #print("POSのパターンでテキストを取り出し完了")
 
     i = 1
     p = -1
@@ -806,10 +754,10 @@ if __name__ == "__main__":
         cls_id = get_class_id(g)
         if cls_id == None:
             continue
-        print(g, c, cnt, i, len(g), cls_id)
+        print(g)
         i += 1
     
-    #exit()
+    exit()
     # 出現頻度順に表示
     i = 1
     p = -1
@@ -837,8 +785,9 @@ if __name__ == "__main__":
             #class_id = get_class_id(item["text"])
             if item["count"] < 2:
                 break
-            print("T:",item["count"], item["text"], cls_id)
-            print("S:",item["count"], item["src"], cls_id)
+            print(item["count"], item["text"], cls_id)
+            #print("T:",item["count"], item["text"], cls_id)
+            #print("S:",item["count"], item["src"], cls_id)
             if cc > 10:  break
             cc += 1
 
