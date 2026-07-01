@@ -36,6 +36,7 @@ cat("VBZ", fun(fun(s,np,b), np, f)).
 cat("VBD", fun(fun(s,np,b), np, f)).
 cat("VBN", fun(np,np,f)). % 過去分詞の名詞修飾
 cat("VBG", fun(np,np,f)). % 動名詞の名詞修飾
+cat(X,np). %:- writeln(X),err.
 cat(X,_):- writeln(X),err.
 
 /*
@@ -271,9 +272,12 @@ en_ccg_line(NO,Result) :-
     writeln(LSB),
     en_chunk_cat(LS, LSB, Cats),!,
     writeln(Cats),
-    parse_ccg(Cats, Result).
+    parse_ccg(Cats, Result),
+    write('*** -> '),
+    writeln(Result).
 
 main:-
+    forall(between(1, 39, X), en_ccg_line(X,Result)).
     %en_ccg_line(11,Result),
-    en_ccg_line(23,Result),
-    writeln(Result).
+    %en_ccg_line(21,Result),
+    %en_ccg_line(23,Result),
