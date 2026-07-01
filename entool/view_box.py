@@ -154,4 +154,6 @@ def visualize_pos_and_boxes_fast(conn, act_id, lang, width=120):
 
 conn = sqlite3.connect("db/ccgDB.sqlite")
 
-visualize_pos_and_boxes_fast(conn, 2, 2, width=100)
+for i in range(10,11):
+  print(f"#********* Act id= {i}  *****************#")
+  visualize_pos_and_boxes_fast(conn, i, 2, width=100)

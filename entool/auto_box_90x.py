@@ -32,7 +32,7 @@ def kako_recursive(txt_seq, lang):
                 start_idx = stack.pop()
                 if not stack:
                     box_kakos.append((start_idx,i+1))
-                    #print(txt_seq[start_idx:i+1])
+                    #print(start_idx,i+1,txt_seq[start_idx:i+1])
                     #kako_id_counter += 1
         i += 1
 
@@ -58,7 +58,7 @@ def boxer_recursive(txt_seq, lang):
             if stack:
                 start_idx = stack.pop()
                 boxs.append((start_idx,i+1))
-                #print(txt_seq[start_idx:i+1])
+                #print(start_idx,i+1,txt_seq[start_idx:i+1])
                 #kako_id_counter += 1
         i += 1
 
@@ -75,7 +75,7 @@ def insert_box_line(lang,pos_seq, txt_seq, id_seq):
     for s,e in boxs:
       result.append((900,pos_seq[s:e],txt_seq[s:e],id_seq[s:e]))
 
-    box = boxer_recursive(txt_seq, lang)
+    boxs = boxer_recursive(txt_seq, lang)
     for s,e in boxs:
       result.append((901,pos_seq[s:e],txt_seq[s:e],id_seq[s:e]))
 
@@ -83,45 +83,55 @@ def insert_box_line(lang,pos_seq, txt_seq, id_seq):
 
 
 def process_pos_rows(cur, act, lang):
-    # pos_tbl から行を取得
     cur.execute("""
-        SELECT src_id, line_num, pos, word
-        FROM pos_tbl
-        WHERE act_id = ? AND lang = ?
-        ORDER BY src_id
-    """, (act,lang,))
+    SELECT src_id, line_num, pos, word
+    FROM pos_tbl
+    WHERE act_id = ? AND lang = ?
+    ORDER BY line_num, src_id
+    """, (act, lang))
+
     rows = cur.fetchall()
 
-    # pos_seq / txt_seq / id_seq を作成
-    pos_seq = [r[2] for r in rows]
-    txt_seq = [r[3] for r in rows]
-    id_seq  = [r[0] for r in rows]
+    # 行番号ごとにまとめる
+    from collections import defaultdict
 
-    # BOX 抽出
-    boxes = insert_box_line(lang, pos_seq, txt_seq, id_seq)
+    line_map = defaultdict(list)
 
-    # insert_buffer を作成
+    for src_id, line_num, pos, word in rows:
+        line_map[line_num].append((src_id, pos, word))
+
     insert_buffer = []
-    for class_id, pseq, tseq, ids in boxes:
-        start_id = ids[0]
-        end_id   = ids[-1]
-        content  = " ".join(tseq)
-        msg = PAT_CLASS[class_id]
-        addm = ""
-        if len(msg['typ'])> 0:
-            addm = f" {msg['typ']}"
-        type = " ".join(pseq)  # 300番台は純粋な品詞列、他は後でマーク付与
-        box_type = f"{type}{addm}"
 
-        insert_buffer.append((
-            act,          # act_id
-            lang,            # lang（英語=1）
-            start_id,
-            end_id,
-            content,
-            class_id,
-            box_type
-        ))
+    # 行ごとに pos_seq / txt_seq / id_seq を作成
+    for line_num, items in line_map.items():
+        id_seq  = [sid for sid, pos, word in items]
+        pos_seq = [pos for sid, pos, word in items]
+        txt_seq = [word for sid, pos, word in items]
+
+        # BOX 抽出
+        boxes = insert_box_line(lang, pos_seq, txt_seq, id_seq)
+
+        # insert_buffer を作成
+        for class_id, pseq, tseq, ids in boxes:
+            start_id = ids[0]
+            end_id   = ids[-1]
+            content  = " ".join(tseq)
+            msg = PAT_CLASS[class_id]
+            addm = ""
+            if len(msg['typ'])> 0:
+                addm = f" {msg['typ']}"
+            type = " ".join(pseq)  # 300番台は純粋な品詞列、他は後でマーク付与
+            box_type = f"{type}{addm}"
+            #print(start_id,end_id,class_id,content,box_type)
+            insert_buffer.append((
+                act,          # act_id
+                lang,            # lang（英語=1）
+                start_id,
+                end_id,
+                content,
+                class_id,
+                box_type
+            ))
 
     return insert_buffer
 
